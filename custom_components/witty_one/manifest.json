@@ -1,0 +1,12 @@
+{
+  "domain": "witty_one",
+  "name": "Witty One Integration",
+  "codeowners": [
+    "@ngraziano"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/ngraziano/witty_one",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/ngraziano/witty_one/issues",
+  "version": "0.0.0"
+}
