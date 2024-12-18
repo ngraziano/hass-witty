@@ -1,5 +1,9 @@
 # Witty One Integration
 
+> [! WARNING ]
+> Work in progress
+> Nothing to see now, only a template
+
 [![GitHub Release][releases-shield]][releases]
 [![GitHub Activity][commits-shield]][commits]
 [![License][license-shield]](LICENSE)
