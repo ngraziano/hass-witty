@@ -4,9 +4,16 @@
   "codeowners": [
     "@ngraziano"
   ],
+  "bluetooth": [
+    {
+      "local_name": "Witty-*"
+    }
+  ],
   "config_flow": true,
+  "dependencies": ["bluetooth_adapters"],
   "documentation": "https://github.com/ngraziano/witty_one",
-  "iot_class": "cloud_polling",
+  "integration_type": "device",
+  "iot_class": "local_polling",
   "issue_tracker": "https://github.com/ngraziano/witty_one/issues",
   "version": "0.0.0"
 }

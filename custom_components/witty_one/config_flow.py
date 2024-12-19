@@ -1,81 +1,94 @@
-"""Adds config flow for Blueprint."""
+"""Adds config flow for witty one."""
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any
+
 import voluptuous as vol
-from homeassistant import config_entries, data_entry_flow
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
-from homeassistant.helpers import selector
-from homeassistant.helpers.aiohttp_client import async_create_clientsession
-
-from .api import (
-    IntegrationBlueprintApiClient,
-    IntegrationBlueprintApiClientAuthenticationError,
-    IntegrationBlueprintApiClientCommunicationError,
-    IntegrationBlueprintApiClientError,
+from homeassistant.components.bluetooth import (
+    async_discovered_service_info,
 )
-from .const import DOMAIN, LOGGER
+from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.const import CONF_ADDRESS
+
+from .const import DOMAIN
+
+if TYPE_CHECKING:
+    from habluetooth import BluetoothServiceInfoBleak
 
 
-class BlueprintFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
-    """Config flow for Blueprint."""
+SERVICE_UUID = "0000cf60-ea50-49f9-9471-a3fe0cfce893"
+
+
+class WittyOneFlowHandler(ConfigFlow, domain=DOMAIN):
+    """Config flow for witty one."""
 
     VERSION = 1
+
+    def __init__(self) -> None:
+        """Inialize config flow."""
+        self._discovered_devices: dict[str, str] = {}
+
+    async def async_step_bluetooth(
+        self, discovery_info: BluetoothServiceInfoBleak
+    ) -> ConfigFlowResult:
+        """Handle the bluetooth discovery step."""
+        await self.async_set_unique_id(discovery_info.address)
+        self._abort_if_unique_id_configured()
+
+        self._discovery_info = discovery_info
+        name = discovery_info.name
+        self.context["title_placeholders"] = {"name": name}
+        return await self.async_step_bluetooth_confirm()
+
+    async def async_step_bluetooth_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Confirm discovery."""
+        if user_input is not None:
+            return self.async_create_entry(
+                title=self.context["title_placeholders"]["name"],
+                data={},
+            )
+        self._set_confirm_only()
+        return self.async_show_form(
+            step_id="bluetooth_confirm",
+            description_placeholders=self.context["title_placeholders"],
+        )
 
     async def async_step_user(
         self,
         user_input: dict | None = None,
-    ) -> data_entry_flow.FlowResult:
-        """Handle a flow initialized by the user."""
-        _errors = {}
+    ) -> ConfigFlowResult:
+        """Handle the user step to pick discovered device."""
         if user_input is not None:
-            try:
-                await self._test_credentials(
-                    username=user_input[CONF_USERNAME],
-                    password=user_input[CONF_PASSWORD],
-                )
-            except IntegrationBlueprintApiClientAuthenticationError as exception:
-                LOGGER.warning(exception)
-                _errors["base"] = "auth"
-            except IntegrationBlueprintApiClientCommunicationError as exception:
-                LOGGER.error(exception)
-                _errors["base"] = "connection"
-            except IntegrationBlueprintApiClientError as exception:
-                LOGGER.exception(exception)
-                _errors["base"] = "unknown"
-            else:
-                return self.async_create_entry(
-                    title=user_input[CONF_USERNAME],
-                    data=user_input,
-                )
+            address = user_input[CONF_ADDRESS]
+            await self.async_set_unique_id(address, raise_on_progress=False)
+            self._abort_if_unique_id_configured()
+
+            name = self._discovered_devices[address]
+            self.context["title_placeholders"] = {
+                "name": name,
+            }
+            return self.async_create_entry(title=name, data={})
+
+        current_addresses = self._async_current_ids()
+        for discovery_info in async_discovered_service_info(self.hass):
+            address = discovery_info.address
+            if (
+                address in current_addresses
+                or address in self._discovered_devices
+                or not discovery_info.name.startswith("Witty-")
+            ):
+                continue
+            self._discovered_devices[address] = discovery_info.name
+
+        if not self._discovered_devices:
+            return self.async_abort(reason="no_devices_found")
 
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema(
-                {
-                    vol.Required(
-                        CONF_USERNAME,
-                        default=(user_input or {}).get(CONF_USERNAME, vol.UNDEFINED),
-                    ): selector.TextSelector(
-                        selector.TextSelectorConfig(
-                            type=selector.TextSelectorType.TEXT,
-                        ),
-                    ),
-                    vol.Required(CONF_PASSWORD): selector.TextSelector(
-                        selector.TextSelectorConfig(
-                            type=selector.TextSelectorType.PASSWORD,
-                        ),
-                    ),
-                },
+                {vol.Required(CONF_ADDRESS): vol.In(self._discovered_devices)}
             ),
-            errors=_errors,
         )
-
-    async def _test_credentials(self, username: str, password: str) -> None:
-        """Validate credentials."""
-        client = IntegrationBlueprintApiClient(
-            username=username,
-            password=password,
-            session=async_create_clientsession(self.hass),
-        )
-        await client.async_get_data()
