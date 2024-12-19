@@ -1,6 +1,6 @@
 # Witty One Integration
 
-> [! WARNING ]
+> [!WARNING]
 > Work in progress
 > Nothing to see now, only a template
 
