@@ -1,13 +1,13 @@
 {
   "domain": "witty_one",
   "name": "Witty One Integration",
-  "codeowners": [
-    "@ngraziano"
-  ],
   "bluetooth": [
     {
       "local_name": "Witty-*"
     }
+  ],
+  "codeowners": [
+    "@ngraziano"
   ],
   "config_flow": true,
   "dependencies": ["bluetooth_adapters"],
