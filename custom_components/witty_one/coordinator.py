@@ -3,24 +3,30 @@
 from __future__ import annotations
 
 from datetime import timedelta
-import struct
 from typing import TYPE_CHECKING, Any
 
-from bleak import BleakClient
-from bleak_retry_connector import establish_connection
+from bleak_retry_connector import (
+    close_stale_connections_by_address,
+)
 from homeassistant.components import bluetooth
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+
+from custom_components.witty_one.witty_one.parser import (
+    WittyOneDevice,
+    WittyOneDeviceData,
+)
 
 from .const import DOMAIN, LOGGER
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
 
+type WittyOneConfigEntry = ConfigEntry[WittyOneDataUpdateCoordinator]
 
-# https://developers.home-assistant.io/docs/integration_fetching_data#coordinated-single-api-poll-for-data-for-all-entities
-class WittyOneDataUpdateCoordinator(DataUpdateCoordinator[ConfigEntry]):
+
+class WittyOneDataUpdateCoordinator(DataUpdateCoordinator[WittyOneDevice]):
     """Class to manage fetching data from the API."""
 
     config_entry: ConfigEntry
@@ -30,6 +36,7 @@ class WittyOneDataUpdateCoordinator(DataUpdateCoordinator[ConfigEntry]):
         hass: HomeAssistant,
     ) -> None:
         """Initialize."""
+        self.witty = WittyOneDeviceData(LOGGER)
         super().__init__(
             hass=hass,
             logger=LOGGER,
@@ -37,32 +44,26 @@ class WittyOneDataUpdateCoordinator(DataUpdateCoordinator[ConfigEntry]):
             update_interval=timedelta(seconds=30),
         )
 
-    async def _async_setup(self) -> None:
-        """Set up the data."""
-        pass
-        # self.config_entry.unique_id
-
     async def _async_update_data(self) -> Any:
         """Update data via library."""
-        LOGGER.info("Updating data from %s ", self.config_entry)
-        LOGGER.info(self.config_entry)
         address = self.config_entry.unique_id
+        if not address:
+            msg = "No address found in configuration"
+            raise ConfigEntryNotReady(msg)
 
-        assert address is not None
+        LOGGER.debug("Updating data from %s ", address)
+
+        await close_stale_connections_by_address(address)
 
         ble_device = bluetooth.async_ble_device_from_address(self.hass, address)
-        assert ble_device is not None
+        if not ble_device:
+            msg = f"Could not find Witty One device with address {address}"
+            raise ConfigEntryNotReady(msg)
 
-        client = await establish_connection(BleakClient, ble_device, ble_device.address)
-        await client.pair()
-        tmp = await client.read_gatt_char("4010cf60-ea50-49f9-9471-a3fe0cfce893")
-        d = struct.unpack("<HQQQQQQQQQQQQQQQQQQQQ", tmp)[20]
-        LOGGER.info("Data: %s", tmp)
-        await client.disconnect()
-        return {"body": d / 1000}
-        # try:
-        #    return await self.config_entry.runtime_data.client.async_get_data()
-        # except WittyOneApiClientAuthenticationError as exception:
-        #    raise ConfigEntryAuthFailed(exception) from exception
-        # except WittyOneApiClientError as exception:
-        #     raise UpdateFailed(exception) from exception
+        try:
+            data = await self.witty.update_device(ble_device)
+        except Exception as err:
+            msg = f"Unable to fetch data: {err}"
+            raise UpdateFailed(msg) from err
+
+        return data

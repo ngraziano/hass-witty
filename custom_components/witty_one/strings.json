@@ -1,7 +1,7 @@
 {
-    "config": {
-        "flow_title": "{name}",
-        "step": {
+  "config": {
+    "flow_title": "{name}",
+    "step": {
       "user": {
         "description": "[%key:component::bluetooth::config::step::user::description%]",
         "data": {
@@ -17,6 +17,22 @@
       "no_devices_found": "[%key:common::config_flow::abort::no_devices_found%]",
       "already_in_progress": "[%key:common::config_flow::abort::already_in_progress%]",
       "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "total_energy": {
+        "name": "Total Energy"
+      },
+      "phase1_energy": {
+        "name": "Phase 1 Energy"
+      },
+      "phase2_energy": {
+        "name": "Phase 2 Energy"
+      },
+      "phase3_energy": {
+        "name": "Phase 3 Energy"
+      }
     }
   }
 }
