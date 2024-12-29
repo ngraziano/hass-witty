@@ -32,6 +32,15 @@
       },
       "phase3_energy": {
         "name": "Phase 3 Energy"
+      },
+      "current_session_energy": {
+        "name": "Energy of current session"
+      },
+      "power": {
+        "name": "Power"
+      },
+      "current_session_duration": {
+        "name": "Duration of current session"
       }
     }
   }

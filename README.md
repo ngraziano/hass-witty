@@ -2,7 +2,7 @@
 
 > [!WARNING]
 > Work in progress
-> Nothing to see now, only a template
+
 
 [![GitHub Release][releases-shield]][releases]
 [![GitHub Activity][commits-shield]][commits]
@@ -11,18 +11,14 @@
 ![Project Maintenance][maintenance-shield]
 <!-- [![BuyMeCoffee][buymecoffeebadge]][buymecoffee] -->
 
-<!-- [![Discord][discord-shield]][discord]
-[![Community Forum][forum-shield]][forum] -->
 
-_Integration to integrate with [witty_one][witty_one]._
+Integration to integrate with Hager Witty One chargin station.
 
-**This integration will set up the following platforms.**
+<!-- **This integration will set up the following platforms.**
 
 Platform | Description
 -- | --
-`binary_sensor` | Show something `True` or `False`.
-`sensor` | Show info from blueprint API.
-`switch` | Switch something `True` or `False`.
+`sensor` | Show info from blueprint API. -->
 
 ## Installation
 
@@ -32,6 +28,7 @@ Platform | Description
 1. Download _all_ the files from the `custom_components/witty_one/` directory (folder) in this repository.
 1. Place the files you downloaded in the new directory (folder) you created.
 1. Restart Home Assistant
+1. Put the charging station in pairing mode with the card
 1. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "Witty One Integration"
 
 ## Configuration is done in the UI
@@ -49,9 +46,6 @@ If you want to contribute to this please read the [Contribution guidelines](CONT
 [buymecoffeebadge]: https://img.shields.io/badge/buy%20me%20a%20coffee-donate-yellow.svg?style=for-the-badge
 [commits-shield]: https://img.shields.io/github/commit-activity/y/ngraziano/hass-witty.svg?style=for-the-badge
 [commits]: https://github.com/ngraziano/hass-witty/commits/main
-[discord]: https://discord.gg/Qa5fW2R
-[discord-shield]: https://img.shields.io/discord/330944238910963714.svg?style=for-the-badge
-[exampleimg]: example.png
 [forum-shield]: https://img.shields.io/badge/community-forum-brightgreen.svg?style=for-the-badge
 [forum]: https://community.home-assistant.io/
 [license-shield]: https://img.shields.io/github/license/ngraziano/hass-witty.svg?style=for-the-badge
