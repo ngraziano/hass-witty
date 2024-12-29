@@ -2,7 +2,7 @@
 Custom integration to integrate witty_one with Home Assistant.
 
 For more details about this integration, please refer to
-https://github.com/ngraziano/witty_one
+https://github.com/ngraziano/hass-witty
 """
 
 from __future__ import annotations

@@ -10,10 +10,12 @@
     "@ngraziano"
   ],
   "config_flow": true,
-  "dependencies": ["bluetooth_adapters"],
-  "documentation": "https://github.com/ngraziano/witty_one",
+  "dependencies": [
+    "bluetooth_adapters"
+  ],
+  "documentation": "https://github.com/ngraziano/hass-witty",
   "integration_type": "device",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/ngraziano/witty_one/issues",
+  "issue_tracker": "https://github.com/ngraziano/hass-witty/issues",
   "version": "0.0.0"
 }
