@@ -2,25 +2,25 @@
     "entity": {
         "sensor": {
             "total_energy": {
-                "name": "Total Energy"
+                "name": "Énergie Totale"
             },
             "phase1_energy": {
-                "name": "Phase 1 Energy"
+                "name": "Énergie phase 1"
             },
             "phase2_energy": {
-                "name": "Phase 2 Energy"
+                "name": "Énergie phase 2"
             },
             "phase3_energy": {
-                "name": "Phase 3 Energy"
+                "name": "Énergie phase 3"
             },
             "current_session_energy": {
-                "name": "Energy of current session"
+                "name": "Énergie session courante"
             },
             "power": {
-                "name": "Power"
+                "name": "Puissance"
             },
             "current_session_duration": {
-                "name": "Duration of current session"
+                "name": "Durée session courante"
             }
         }
     }

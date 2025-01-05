@@ -122,11 +122,8 @@ class WittyOneSensor(WittyOneEntity, SensorEntity):
         entity_description: WittyOneSensorEntityDescription,
     ) -> None:
         """Initialize the sensor class."""
-        super().__init__(coordinator)
+        super().__init__(coordinator, entity_description.key)
         self.entity_description = entity_description
-        self._attr_unique_id = (
-            f"{coordinator.config_entry.unique_id}_{entity_description.key}"
-        )
 
     @property
     def native_value(self) -> datetime | StateType:
