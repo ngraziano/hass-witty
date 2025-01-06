@@ -196,9 +196,6 @@ class WittyOneDeviceData:
             self._update_phases_state(client),
             self._current_session(client),
         )
-        # device.energies = await self._update_energy(client)
-        # device.phases_states = await self._update_phases_state(client)
-        # device.current_session = await self._current_session(client)
         self.logger.debug("Device data: %s", device)
         await client.disconnect()
         return device
