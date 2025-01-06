@@ -7,10 +7,13 @@ https://github.com/ngraziano/hass-witty
 
 from __future__ import annotations
 
+from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from homeassistant.const import Platform
 from homeassistant.loader import async_get_loaded_integration
+
+from custom_components.witty_one.const import DOMAIN, LOGGER
 
 from .coordinator import WittyOneDataUpdateCoordinator
 from .data import WittyOneData
@@ -33,6 +36,9 @@ async def async_setup_entry(
     """Set up this integration using UI."""
     coordinator = WittyOneDataUpdateCoordinator(
         hass=hass,
+        logger=LOGGER,
+        name=DOMAIN,
+        update_interval=timedelta(hours=1),
     )
 
     entry.runtime_data = WittyOneData(

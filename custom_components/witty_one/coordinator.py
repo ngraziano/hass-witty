@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from bleak_retry_connector import (
     close_stale_connections_by_address,
@@ -18,10 +17,7 @@ from custom_components.witty_one.witty_one.parser import (
     WittyOneDeviceData,
 )
 
-from .const import DOMAIN, LOGGER
-
-if TYPE_CHECKING:
-    from homeassistant.core import HomeAssistant
+from .const import LOGGER
 
 type WittyOneConfigEntry = ConfigEntry[WittyOneDataUpdateCoordinator]
 
@@ -30,19 +26,7 @@ class WittyOneDataUpdateCoordinator(DataUpdateCoordinator[WittyOneDevice]):
     """Class to manage fetching data from the API."""
 
     config_entry: ConfigEntry
-
-    def __init__(
-        self,
-        hass: HomeAssistant,
-    ) -> None:
-        """Initialize."""
-        self.witty = WittyOneDeviceData(LOGGER)
-        super().__init__(
-            hass=hass,
-            logger=LOGGER,
-            name=DOMAIN,
-            update_interval=timedelta(seconds=30),
-        )
+    witty = WittyOneDeviceData(LOGGER)
 
     async def _async_update_data(self) -> Any:
         """Update data via library."""
