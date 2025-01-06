@@ -1,5 +1,6 @@
 """Parser for Witty One device."""
 
+import asyncio
 import dataclasses
 import struct
 from logging import Logger
@@ -7,6 +8,14 @@ from logging import Logger
 from bleak import BleakClient
 from bleak.backends.device import BLEDevice
 from bleak_retry_connector import establish_connection
+
+from .const import (
+    AMBIENT_TEMP_UUID,
+    ELECTRIC_STATE_UUID,
+    ENERGY_UUID,
+    RELAY_TEMP_UUID,
+    SESSION_STATE_UUID,
+)
 
 
 @dataclasses.dataclass
@@ -70,7 +79,7 @@ class WittyOneDeviceData:
         self.logger = logger
 
     async def _update_energy(self, client: BleakClient) -> list[WittyOnePhaseEnergy]:
-        tmp = await client.read_gatt_char("4010cf60-ea50-49f9-9471-a3fe0cfce893")
+        tmp = await client.read_gatt_char(ENERGY_UUID)
         values = struct.unpack("<HQQQQQQQQQQQQQQQQQQQQ", tmp)
         return [
             WittyOnePhaseEnergy(
@@ -106,7 +115,7 @@ class WittyOneDeviceData:
     async def _update_phases_state(
         self, client: BleakClient
     ) -> list[WittyOnePhaseState]:
-        tmp = await client.read_gatt_char("4110cf60-ea50-49f9-9471-a3fe0cfce893")
+        tmp = await client.read_gatt_char(ELECTRIC_STATE_UUID)
         values = struct.unpack("<HLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL", tmp)
         return [
             WittyOnePhaseState(
@@ -151,7 +160,7 @@ class WittyOneDeviceData:
         ]
 
     async def _current_session(self, client: BleakClient) -> WittyCurrentSession:
-        tmp = await client.read_gatt_char("6110cf60-ea50-49f9-9471-a3fe0cfce893")
+        tmp = await client.read_gatt_char(SESSION_STATE_UUID)
         values = struct.unpack_from("<HL7sLQB7s", tmp)
         return WittyCurrentSession(
             start=values[1],
@@ -162,15 +171,34 @@ class WittyOneDeviceData:
             badge=values[6],
         )
 
+    async def _ambient_temp(self, client: BleakClient) -> float:
+        tmp = await client.read_gatt_char(AMBIENT_TEMP_UUID)
+        (_, value, min_value, max_value) = struct.unpack("<Hhhh", tmp)
+        return value / 100
+
+    async def _relay_temp(self, client: BleakClient) -> float:
+        tmp = await client.read_gatt_char(RELAY_TEMP_UUID)
+        (_, value, min_value, max_value) = struct.unpack("<Hhhh", tmp)
+        return value / 100
+
     async def update_device(self, ble_device: BLEDevice) -> WittyOneDevice:
         """Update the device."""
         client = await establish_connection(BleakClient, ble_device, ble_device.address)
         device = WittyOneDevice()
         await client.pair()
 
-        device.energies = await self._update_energy(client)
-        device.phases_states = await self._update_phases_state(client)
-        device.current_session = await self._current_session(client)
+        (
+            device.energies,
+            device.phases_states,
+            device.current_session,
+        ) = await asyncio.gather(
+            self._update_energy(client),
+            self._update_phases_state(client),
+            self._current_session(client),
+        )
+        # device.energies = await self._update_energy(client)
+        # device.phases_states = await self._update_phases_state(client)
+        # device.current_session = await self._current_session(client)
         self.logger.debug("Device data: %s", device)
         await client.disconnect()
         return device
