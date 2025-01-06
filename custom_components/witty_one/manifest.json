@@ -17,5 +17,5 @@
   "integration_type": "device",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/ngraziano/hass-witty/issues",
-  "version": "0.0.0"
+  "version": "0.2.0"
 }
