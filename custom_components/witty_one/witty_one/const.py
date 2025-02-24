@@ -1,9 +1,17 @@
 """Constants for witty one read."""
 
 
+def _info_uuid(address: str) -> str:
+    return f"{address}e6d9-4a07-4169-a799-89bc59e4f742"
+
+
 def _state_uuid(address: str) -> str:
     return f"{address}cf60-ea50-49f9-9471-a3fe0cfce893"
 
+
+MODEL_UUID = _info_uuid("1400")
+
+NAME_UUID = _state_uuid("0080")
 
 # Version
 # app version a.b.c.d _
