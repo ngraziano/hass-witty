@@ -1,7 +1,7 @@
 # Witty One Integration
 
 > [!WARNING]
-> Work in progress
+> Work in progress, the list of sensor may change and you may need to re-add this integration.
 
 
 [![GitHub Release][releases-shield]][releases]
@@ -19,6 +19,21 @@ Integration to integrate with Hager Witty One chargin station.
 Platform | Description
 -- | --
 `sensor` | Show info from blueprint API. -->
+
+## Remark on Ble Proxy with esphome
+
+This ESP sdk has a limitation for the number of data read in one time from a BLE device, the default value is to small so the configuration
+must include the following.
+
+```yml
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+    # increase the number of characteristic read by the ESP
+    sdkconfig_options:
+      CONFIG_BT_GATTC_MAX_CACHE_CHAR: "80"
+```
 
 ## Installation
 
