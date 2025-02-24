@@ -10,6 +10,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN, MANUFACTURER
 from .coordinator import WittyOneDataUpdateCoordinator
+from .witty_one.parser import model_id_to_name
 
 
 class WittyOneEntity(CoordinatorEntity[WittyOneDataUpdateCoordinator]):
@@ -28,5 +29,7 @@ class WittyOneEntity(CoordinatorEntity[WittyOneDataUpdateCoordinator]):
             },
             identifiers={(DOMAIN, coordinator.config_entry.entry_id)},
             manufacturer=MANUFACTURER,
-            name=coordinator.config_entry.title,
+            name=coordinator.data.static_information.name,
+            model=model_id_to_name(coordinator.data.static_information.model),
+            model_id=coordinator.data.static_information.model,
         )

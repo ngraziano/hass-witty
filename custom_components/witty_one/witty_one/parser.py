@@ -4,6 +4,7 @@ import asyncio
 import dataclasses
 import struct
 from logging import Logger
+from uuid import UUID
 
 from bleak import BleakClient
 from bleak.backends.device import BLEDevice
@@ -78,7 +79,7 @@ class WittyOneDevice:
     )
 
 
-async def _read_string(client: BleakClient, uuid: str) -> str:
+async def _read_string(client: BleakClient, uuid: str | UUID) -> str:
     tmp = await client.read_gatt_char(uuid)
     (length,) = struct.unpack("<H", tmp[0:2])
     return tmp[2 : 2 + length].rstrip(b"\0").decode("utf-8")
@@ -248,3 +249,16 @@ class WittyOneDeviceData:
         self.logger.debug("Device data: %s", device)
         await client.disconnect()
         return device
+
+
+def model_id_to_name(model_id: str) -> str:
+    """Convert model id to a string."""
+    match model_id:
+        case "XVR111STI":
+            return "Witty one 1x11kW 3P"
+        case "XVR107STP":
+            return "Witty one 1x7kW 1P"
+        case "XVR107STI":
+            return "Witty one 1x7kW 1P"
+        case _:
+            return "Witty unknown"

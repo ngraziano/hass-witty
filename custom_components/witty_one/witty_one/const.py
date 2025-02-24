@@ -1,12 +1,14 @@
 """Constants for witty one read."""
 
-
-def _info_uuid(address: str) -> str:
-    return f"{address}e6d9-4a07-4169-a799-89bc59e4f742"
+from uuid import UUID
 
 
-def _state_uuid(address: str) -> str:
-    return f"{address}cf60-ea50-49f9-9471-a3fe0cfce893"
+def _info_uuid(address: str) -> UUID:
+    return UUID(f"{address}e6d9-4a07-4169-a799-89bc59e4f742")
+
+
+def _state_uuid(address: str) -> UUID:
+    return UUID(f"{address}cf60-ea50-49f9-9471-a3fe0cfce893")
 
 
 MODEL_UUID = _info_uuid("1400")
