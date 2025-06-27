@@ -234,7 +234,7 @@ class WittyOneDeviceData:
                     'try to add CONFIG_BT_GATTC_MAX_CACHE_CHAR: "80"'
                     " to sdkconfig_options if you use esphome"
                 )
-                if callable(getattr(client, 'clear_cache', None)):
+                if callable(getattr(client, "clear_cache", None)):
                     await client.clear_cache()
                 raise
 
