@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from tkinter import W
 from typing import TYPE_CHECKING
 
 from homeassistant.components.sensor import (
@@ -35,6 +36,23 @@ class WittyOneSensorEntityDescription(SensorEntityDescription):
     exists_fn: Callable[[WittyOneDevice], bool] = lambda _: True
     value_fn: Callable[[WittyOneDevice], datetime | StateType]
 
+
+GENERAL_STATES = [
+    "idle",
+    "wait_auth",
+    "wait_plug",
+    "wait_unplug",
+    "wait_energy",
+    "wait_charging",
+    "charging",
+    "finishing",
+    "finished",
+    "rotary_reset",
+    "rotary_out_test",
+    "rotary_error",
+    "error",
+    "error_iec",
+]
 
 ENTITY_DESCRIPTIONS: tuple[WittyOneSensorEntityDescription, ...] = (
     WittyOneSensorEntityDescription(
@@ -95,23 +113,8 @@ ENTITY_DESCRIPTIONS: tuple[WittyOneSensorEntityDescription, ...] = (
         key="state",
         translation_key="state",
         device_class=SensorDeviceClass.ENUM,
-        options=[
-            "idle",
-            "wait_auth",
-            "wait_plug",
-            "wait_unplug",
-            "wait_energy",
-            "wait_charging",
-            "charging",
-            "finishing",
-            "finished",
-            "rotary_reset",
-            "rotary_out_test",
-            "rotary_error",
-            "error",
-            "error_iec",
-        ],
-        value_fn=lambda device: device.general.state,
+        options=GENERAL_STATES,
+        value_fn=lambda device: GENERAL_STATES[device.general.state],
     ),
 )
 
