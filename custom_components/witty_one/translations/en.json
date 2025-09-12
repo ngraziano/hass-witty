@@ -21,6 +21,25 @@
             },
             "current_session_duration": {
                 "name": "Duration of current session"
+            },
+            "state": {
+                "name": "State",
+                "state": {
+                    "idle": "Idle",
+                    "wait_auth": "Wait authentication",
+                    "wait_plug": "Wait EV plug",
+                    "wait_unplug": "Wait EV unplug",
+                    "wait_energy": "Wait energy",
+                    "wait_charging": "Wait charging",
+                    "charging": "Charging",
+                    "finishing": "Charge finishing",
+                    "finished": "Charge finished",
+                    "rotary_reset": "Rotary reset",
+                    "rotary_out_test": "Rotary out test",
+                    "rotary_error": "Rotary error",
+                    "error": "Error",
+                    "error_iec": "Error IEC"
+                }
             }
         }
     }

@@ -21,6 +21,25 @@
             },
             "current_session_duration": {
                 "name": "Durée session courante"
+            },
+            "state": {
+                "name": "État",
+                "state": {
+                    "idle": "Inactif",
+                    "wait_auth": "Attente authentification",
+                    "wait_plug": "Attente branchement VE",
+                    "wait_unplug": "Attente débranchement VE",
+                    "wait_energy": "Attente énergie",
+                    "wait_charging": "Attente charge",
+                    "charging": "Charge",
+                    "finishing": "Charge finition",
+                    "finished": "Charge finie",
+                    "rotary_reset": "Roue reset",
+                    "rotary_out_test": "Roue test sortie",
+                    "rotary_error": "Roue erreur",
+                    "error": "Erreur",
+                    "error_iec": "Erreur IEC"
+                }
             }
         }
     }

@@ -12,6 +12,7 @@ from bleak_retry_connector import establish_connection
 
 from .const import (
     AMBIENT_TEMP_UUID,
+    CONNECTION_STATE_UUID,
     ELECTRIC_STATE_UUID,
     ENERGY_UUID,
     MODEL_UUID,
@@ -68,10 +69,20 @@ class WittyCurrentSession:
 
 
 @dataclasses.dataclass
+class WittyOneGeneralState:
+    """General state data for Witty One device."""
+
+    state: int = 0
+
+
+@dataclasses.dataclass
 class WittyOneDevice:
     """Reponse data for Witty One device."""
 
     static_information: WittyOneStaticProperties
+    general: WittyOneGeneralState = dataclasses.field(
+        default_factory=WittyOneGeneralState
+    )
     energies: list[WittyOnePhaseEnergy] = dataclasses.field(default_factory=list)
     phases_states: list[WittyOnePhaseState] = dataclasses.field(default_factory=list)
     current_session: WittyCurrentSession = dataclasses.field(
@@ -193,6 +204,12 @@ async def _current_session(client: BleakClient) -> WittyCurrentSession:
     )
 
 
+async def _read_general_state(client: BleakClient) -> WittyOneGeneralState:
+    tmp = await client.read_gatt_char(CONNECTION_STATE_UUID)
+    values = struct.unpack_from("<HHHHHHH", tmp)
+    return WittyOneGeneralState(state=values[1])
+
+
 async def _ambient_temp(client: BleakClient) -> float:
     tmp = await client.read_gatt_char(AMBIENT_TEMP_UUID)
     (_, value, min_value, max_value) = struct.unpack("<Hhhh", tmp)
@@ -235,15 +252,17 @@ class WittyOneDeviceData:
                     " to sdkconfig_options if you use esphome"
                 )
                 if callable(getattr(client, "clear_cache", None)):
-                    await client.clear_cache()
+                    await client.clear_cache()  # pyright: ignore[reportAttributeAccessIssue]
                 raise
 
         device = WittyOneDevice(static_information=self.static_properties)
         (
+            device.general,
             device.energies,
             device.phases_states,
             device.current_session,
         ) = await asyncio.gather(
+            _read_general_state(client),
             _read_energy(client),
             _read_phases_state(client),
             _current_session(client),

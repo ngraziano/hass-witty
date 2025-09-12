@@ -91,6 +91,28 @@ ENTITY_DESCRIPTIONS: tuple[WittyOneSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.DURATION,
         value_fn=lambda device: device.current_session.duration,
     ),
+    WittyOneSensorEntityDescription(
+        key="state",
+        translation_key="state",
+        device_class=SensorDeviceClass.ENUM,
+        options=[
+            "idle",
+            "wait_auth",
+            "wait_plug",
+            "wait_unplug",
+            "wait_energy",
+            "wait_charging",
+            "charging",
+            "finishing",
+            "finished",
+            "rotary_reset",
+            "rotary_out_test",
+            "rotary_error",
+            "error",
+            "error_iec",
+        ],
+        value_fn=lambda device: device.general.state,
+    ),
 )
 
 
