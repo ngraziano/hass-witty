@@ -148,7 +148,7 @@ async def _read_energy(client: BleakClient) -> list[WittyOnePhaseEnergy]:
 
 async def _read_phases_state(client: BleakClient) -> list[WittyOnePhaseState]:
     tmp = await client.read_gatt_char(ELECTRIC_STATE_UUID)
-    values = struct.unpack("<HLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL", tmp)
+    values = struct.unpack("<Hlllllllllllllllllllllllllllllll", tmp)
     return [
         WittyOnePhaseState(
             voltage=values[1] / 1000,
