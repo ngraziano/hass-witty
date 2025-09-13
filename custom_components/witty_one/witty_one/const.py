@@ -26,7 +26,8 @@ MAIN_BOARD_VERSION_UUID = _state_uuid("0102")
 RF_BOARD_VERSION_UUID = _state_uuid("0202")
 HMI_BOARD_VERSION_UUID = _state_uuid("0302")
 
-STARTUP_COUNT_UUID = _state_uuid("0410")  # length 4+0x0004 format : <HQ
+STATE_UUID = _state_uuid("0010")  # length 4+0x0004 format : <HI
+STARTUP_COUNT_UUID = _state_uuid("0410")  # length 4+0x0004 format : <HI
 DURATIONS_UUID = _state_uuid("0510")  # length 4+0x0010 format : <HIIII
 COMMUTATION_UUID = _state_uuid("0610")  # length 4+0x0020 format : <HQQQQ
 CAR_DETECT_UUID = _state_uuid("0710")  # length 4+0x0004 format : <HQ

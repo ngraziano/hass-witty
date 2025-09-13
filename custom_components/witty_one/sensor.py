@@ -36,22 +36,15 @@ class WittyOneSensorEntityDescription(SensorEntityDescription):
     value_fn: Callable[[WittyOneDevice], datetime | StateType]
 
 
-GENERAL_STATES = [
-    "idle",
-    "wait_auth",
-    "wait_plug",
-    "wait_unplug",
-    "wait_energy",
-    "wait_charging",
-    "charging",
-    "finishing",
-    "finished",
-    "rotary_reset",
-    "rotary_out_test",
-    "rotary_error",
-    "error",
-    "error_iec",
-]
+GENERAL_STATES = {
+    1: "idle",  # 256
+    2: "wait",  # 512
+    4: "wait_energy",  # 1024
+    6: "charging",  # 1536
+    8: "finish",  # 2048
+    16: "reserved",  # 4096
+    15728640: "error",
+}
 
 ENTITY_DESCRIPTIONS: tuple[WittyOneSensorEntityDescription, ...] = (
     WittyOneSensorEntityDescription(
@@ -112,8 +105,8 @@ ENTITY_DESCRIPTIONS: tuple[WittyOneSensorEntityDescription, ...] = (
         key="state",
         translation_key="state",
         device_class=SensorDeviceClass.ENUM,
-        options=GENERAL_STATES,
-        value_fn=lambda device: GENERAL_STATES[device.general.state],
+        options=list(GENERAL_STATES.values()),
+        value_fn=lambda device: GENERAL_STATES[device.general.mainstate],
     ),
 )
 

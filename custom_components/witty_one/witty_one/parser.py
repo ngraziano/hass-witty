@@ -12,13 +12,13 @@ from bleak_retry_connector import establish_connection
 
 from .const import (
     AMBIENT_TEMP_UUID,
-    CONNECTION_STATE_UUID,
     ELECTRIC_STATE_UUID,
     ENERGY_UUID,
     MODEL_UUID,
     NAME_UUID,
     RELAY_TEMP_UUID,
     SESSION_STATE_UUID,
+    STATE_UUID,
 )
 
 
@@ -72,7 +72,8 @@ class WittyCurrentSession:
 class WittyOneGeneralState:
     """General state data for Witty One device."""
 
-    state: int = 0
+    mainstate: int = 0
+    substate: int = 0
 
 
 @dataclasses.dataclass
@@ -205,9 +206,9 @@ async def _current_session(client: BleakClient) -> WittyCurrentSession:
 
 
 async def _read_general_state(client: BleakClient) -> WittyOneGeneralState:
-    tmp = await client.read_gatt_char(CONNECTION_STATE_UUID)
-    values = struct.unpack_from("<HHHHHHH", tmp)
-    return WittyOneGeneralState(state=values[1])
+    tmp = await client.read_gatt_char(STATE_UUID)
+    values = struct.unpack_from("<HI", tmp)
+    return WittyOneGeneralState(mainstate=values[1] >> 8, substate=values[1] & 0xFF)
 
 
 async def _ambient_temp(client: BleakClient) -> float:

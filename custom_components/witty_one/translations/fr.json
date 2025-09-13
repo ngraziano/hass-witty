@@ -26,17 +26,11 @@
                 "name": "État",
                 "state": {
                     "idle": "Inactif",
-                    "wait_auth": "Attente authentification",
-                    "wait_plug": "Attente branchement VE",
-                    "wait_unplug": "Attente débranchement VE",
-                    "wait_energy": "Attente énergie",
-                    "wait_charging": "Attente charge",
+                    "wait": "En attente",
+                    "wait_energy": "En attente énergie",
                     "charging": "Charge",
-                    "finishing": "Charge finition",
-                    "finished": "Charge finie",
-                    "rotary_reset": "Roue reset",
-                    "rotary_out_test": "Roue test sortie",
-                    "rotary_error": "Roue erreur",
+                    "finish": "Charge finie",
+                    "reserved": "Réservé",
                     "error": "Erreur",
                     "error_iec": "Erreur IEC"
                 }
