@@ -9,7 +9,7 @@ from bleak_retry_connector import (
 )
 from homeassistant.components import bluetooth
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from custom_components.witty_one.witty_one.parser import (
@@ -21,12 +21,17 @@ from .const import LOGGER
 
 type WittyOneConfigEntry = ConfigEntry[WittyOneDataUpdateCoordinator]
 
+MAX_RETRY = 4
+
 
 class WittyOneDataUpdateCoordinator(DataUpdateCoordinator[WittyOneDevice]):
     """Class to manage fetching data from the API."""
 
     config_entry: ConfigEntry
     witty = WittyOneDeviceData(LOGGER)
+
+    previsous_data: WittyOneDevice | None = None
+    nb_error = 0
 
     async def _async_update_data(self) -> Any:
         """Update data via library."""
@@ -41,13 +46,23 @@ class WittyOneDataUpdateCoordinator(DataUpdateCoordinator[WittyOneDevice]):
 
         ble_device = bluetooth.async_ble_device_from_address(self.hass, address)
         if not ble_device:
+            self.nb_error += 1
+            if self.nb_error < MAX_RETRY and self.previsous_data:
+                LOGGER.warning("Device not found, using previous data")
+                return self.previsous_data
             msg = f"Could not find Witty One device with address {address}"
-            raise ConfigEntryNotReady(msg)
+            raise ConfigEntryError(msg)
 
         try:
             data = await self.witty.update_device(ble_device)
         except Exception as err:
+            self.nb_error += 1
+            if self.nb_error < MAX_RETRY and self.previsous_data:
+                LOGGER.warning("Error updating device, using previous data: %s", err)
+                return self.previsous_data
             msg = f"Unable to fetch data: {err}"
             raise UpdateFailed(msg) from err
 
+        self.previsous_data = data
+        self.nb_error = 0
         return data
