@@ -213,13 +213,13 @@ async def _read_general_state(client: BleakClient) -> WittyOneGeneralState:
 
 async def _ambient_temp(client: BleakClient) -> float:
     tmp = await client.read_gatt_char(AMBIENT_TEMP_UUID)
-    (_, value, min_value, max_value) = struct.unpack("<Hhhh", tmp)
+    (_, value, _min_value, _max_value) = struct.unpack("<Hhhh", tmp)
     return value / 100
 
 
 async def _relay_temp(client: BleakClient) -> float:
     tmp = await client.read_gatt_char(RELAY_TEMP_UUID)
-    (_, value, min_value, max_value) = struct.unpack("<Hhhh", tmp)
+    (_, value, _min_value, _max_value) = struct.unpack("<Hhhh", tmp)
     return value / 100
 
 
