@@ -1,6 +1,6 @@
 {
     "name": "Witty One Integration",
-    "homeassistant": "2025.2.4",
+    "homeassistant": "2025.9.4",
     "render_readme": true,
     "hacs": "2.0.1"
 }
