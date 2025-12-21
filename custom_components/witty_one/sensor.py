@@ -120,11 +120,11 @@ async def async_setup_entry(
     coordinator = entry.runtime_data.coordinator
     async_add_entities(
         WittyOneSensor(
-            coordinator=entry.runtime_data.coordinator,
+            coordinator=coordinator,
             entity_description=entity_description,
         )
         for entity_description in ENTITY_DESCRIPTIONS
-        if entity_description.exists_fn(coordinator.data)
+        if coordinator.data is None or entity_description.exists_fn(coordinator.data)
     )
 
 
@@ -145,4 +145,6 @@ class WittyOneSensor(WittyOneEntity, SensorEntity):
     @property
     def native_value(self) -> datetime | StateType:
         """Return the native value of the sensor."""
+        if self.coordinator.data is None:
+            return None
         return self.entity_description.value_fn(self.coordinator.data)

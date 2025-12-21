@@ -7,13 +7,12 @@ https://github.com/ngraziano/hass-witty
 
 from __future__ import annotations
 
-from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from homeassistant.const import Platform
 from homeassistant.loader import async_get_loaded_integration
 
-from .const import DOMAIN, LOGGER
+from .const import LOGGER
 from .coordinator import WittyOneDataUpdateCoordinator
 from .data import WittyOneData
 
@@ -36,8 +35,7 @@ async def async_setup_entry(
     coordinator = WittyOneDataUpdateCoordinator(
         hass=hass,
         logger=LOGGER,
-        name=DOMAIN,
-        update_interval=timedelta(minutes=1),
+        config_entry=entry,
     )
 
     entry.runtime_data = WittyOneData(
@@ -45,10 +43,9 @@ async def async_setup_entry(
         coordinator=coordinator,
     )
 
-    # https://developers.home-assistant.io/docs/integration_fetching_data#coordinated-single-api-poll-for-data-for-all-entities
-    await coordinator.async_config_entry_first_refresh()
-
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    entry.async_on_unload(coordinator.async_start())
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
 
     return True
