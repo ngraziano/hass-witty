@@ -5,14 +5,26 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from homeassistant.components.bluetooth.passive_update_processor import (
+    PassiveBluetoothDataProcessor,
+    PassiveBluetoothDataUpdate,
+    PassiveBluetoothEntityKey,
+)
 from homeassistant.components.sensor import (
     SensorEntity,
     SensorEntityDescription,
 )
 from homeassistant.components.sensor.const import SensorDeviceClass, SensorStateClass
-from homeassistant.const import UnitOfEnergy, UnitOfPower, UnitOfTime
+from homeassistant.const import (
+    UnitOfEnergy,
+    UnitOfPower,
+    UnitOfTime,
+)
+from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, DeviceInfo
 
+from .const import DOMAIN, MANUFACTURER
 from .entity import WittyOneEntity
+from .witty_one.parser import model_id_to_name
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -24,13 +36,12 @@ if TYPE_CHECKING:
 
     from custom_components.witty_one.witty_one.parser import WittyOneDevice
 
-    from .coordinator import WittyOneDataUpdateCoordinator
     from .data import WittyOneConfigEntry
 
 
 @dataclass(frozen=True, kw_only=True)
 class WittyOneSensorEntityDescription(SensorEntityDescription):
-    """Describes WLED sensor entity."""
+    """Describes Witty One sensor entity."""
 
     exists_fn: Callable[[WittyOneDevice], bool] = lambda _: True
     value_fn: Callable[[WittyOneDevice], datetime | StateType]
@@ -118,13 +129,66 @@ async def async_setup_entry(
 ) -> None:
     """Set up the sensor platform."""
     coordinator = entry.runtime_data.coordinator
-    async_add_entities(
-        WittyOneSensor(
-            coordinator=coordinator,
-            entity_description=entity_description,
+
+    def _sensor_update_to_bluetooth_data_update(
+        data: WittyOneDevice | None,
+    ) -> PassiveBluetoothDataUpdate:
+        """Convert a sensor update to a bluetooth data update."""
+        if data is None:
+            return PassiveBluetoothDataUpdate(
+                devices={
+                    coordinator.address: DeviceInfo(
+                        connections={(CONNECTION_BLUETOOTH, coordinator.address)},
+                        identifiers={(DOMAIN, entry.entry_id)},
+                        manufacturer=MANUFACTURER,
+                    )
+                },
+                entity_descriptions={},
+                entity_data={},
+                entity_names={},
+            )
+
+        return PassiveBluetoothDataUpdate(
+            devices={
+                coordinator.address: DeviceInfo(
+                    connections={(CONNECTION_BLUETOOTH, coordinator.address)},
+                    identifiers={(DOMAIN, entry.entry_id)},
+                    manufacturer=MANUFACTURER,
+                    name=data.static_information.name,
+                    model=model_id_to_name(data.static_information.model),
+                    model_id=data.static_information.model,
+                )
+            },
+            entity_descriptions={
+                PassiveBluetoothEntityKey(
+                    description.key, coordinator.address
+                ): SensorEntityDescription(
+                    key=description.key,
+                    device_class=description.device_class,
+                    native_unit_of_measurement=description.native_unit_of_measurement,
+                    state_class=description.state_class,
+                    translation_key=description.translation_key,
+                    options=description.options,
+                )
+                for description in ENTITY_DESCRIPTIONS
+                if description.exists_fn(data)
+            },
+            entity_data={
+                PassiveBluetoothEntityKey(
+                    description.key, coordinator.address
+                ): description.value_fn(data)
+                for description in ENTITY_DESCRIPTIONS
+                if description.exists_fn(data)
+            },
+            entity_names={},
         )
-        for entity_description in ENTITY_DESCRIPTIONS
-        if coordinator.data is None or entity_description.exists_fn(coordinator.data)
+
+    processor = PassiveBluetoothDataProcessor(_sensor_update_to_bluetooth_data_update)
+    entry.async_on_unload(
+        processor.async_add_entities_listener(WittyOneSensor, async_add_entities)
+    )
+    entry.async_on_unload(
+        coordinator.async_register_processor(processor, SensorEntityDescription)
     )
 
 
@@ -133,18 +197,7 @@ class WittyOneSensor(WittyOneEntity, SensorEntity):
 
     entity_description: WittyOneSensorEntityDescription
 
-    def __init__(
-        self,
-        coordinator: WittyOneDataUpdateCoordinator,
-        entity_description: WittyOneSensorEntityDescription,
-    ) -> None:
-        """Initialize the sensor class."""
-        super().__init__(coordinator, entity_description.key)
-        self.entity_description = entity_description
-
     @property
     def native_value(self) -> datetime | StateType:
         """Return the native value of the sensor."""
-        if self.coordinator.data is None:
-            return None
-        return self.entity_description.value_fn(self.coordinator.data)
+        return self.processor.entity_data.get(self.entity_key)
