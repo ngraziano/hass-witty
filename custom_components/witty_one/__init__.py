@@ -10,37 +10,24 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from homeassistant.const import Platform
-from homeassistant.loader import async_get_loaded_integration
 
 from .const import LOGGER
 from .coordinator import WittyOneDataUpdateCoordinator
-from .data import WittyOneData
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
 
-    from .data import WittyOneConfigEntry
+    from .coordinator import WittyOneConfigEntry
 
-PLATFORMS: list[Platform] = [
-    Platform.SENSOR,
-]
+PLATFORMS: list[Platform] = [Platform.SENSOR]
 
 
-# https://developers.home-assistant.io/docs/config_entries_index/#setting-up-an-entry
-async def async_setup_entry(
-    hass: HomeAssistant,
-    entry: WittyOneConfigEntry,
-) -> bool:
+async def async_setup_entry(hass: HomeAssistant, entry: WittyOneConfigEntry) -> bool:
     """Set up this integration using UI."""
-    coordinator = WittyOneDataUpdateCoordinator(
+    coordinator = entry.runtime_data = WittyOneDataUpdateCoordinator(
         hass=hass,
         logger=LOGGER,
         config_entry=entry,
-    )
-
-    entry.runtime_data = WittyOneData(
-        integration=async_get_loaded_integration(hass, entry.domain),
-        coordinator=coordinator,
     )
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -51,17 +38,11 @@ async def async_setup_entry(
     return True
 
 
-async def async_unload_entry(
-    hass: HomeAssistant,
-    entry: WittyOneConfigEntry,
-) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: WittyOneConfigEntry) -> bool:
     """Handle removal of an entry."""
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
 
-async def async_reload_entry(
-    hass: HomeAssistant,
-    entry: WittyOneConfigEntry,
-) -> None:
+async def async_reload_entry(hass: HomeAssistant, entry: WittyOneConfigEntry) -> None:
     """Reload config entry."""
     await hass.config_entries.async_reload(entry.entry_id)

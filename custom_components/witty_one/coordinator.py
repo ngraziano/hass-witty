@@ -41,27 +41,19 @@ class WittyOneDataUpdateCoordinator(
         config_entry: ConfigEntry,
     ) -> None:
         """Initialize."""
-        address = config_entry.unique_id
         super().__init__(
             hass=hass,
             logger=logger,
-            address=address,
-            mode=BluetoothScanningMode.ACTIVE,
-            update_method=self._handle_update,
+            address=config_entry.unique_id,
+            mode=BluetoothScanningMode.PASSIVE,
+            update_method=lambda _: self.last_data,
             needs_poll_method=self._needs_poll,
             poll_method=self._async_poll_device,
+            connectable=True,
         )
         self.witty = WittyOneDeviceData(logger)
-        self.config_entry = config_entry
         self.nb_error = 0
         self.last_data: WittyOneDevice | None = None
-
-    def _handle_update(
-        self, _service_info: BluetoothServiceInfoBleak
-    ) -> WittyOneDevice:
-        """Update data from advertisements."""
-        # Passive updates are not supported by Witty One, return existing data
-        return self.last_data
 
     def _needs_poll(
         self,
