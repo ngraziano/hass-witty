@@ -12,25 +12,25 @@ from homeassistant.components.bluetooth.active_update_processor import (
     ActiveBluetoothProcessorCoordinator,
 )
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import callback
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from custom_components.witty_one.witty_one.parser import (
     WittyOneDevice,
     WittyOneDeviceData,
+    WittyOneStaticProperties,
 )
 
 from .const import LOGGER
 
-type WittyOneConfigEntry = ConfigEntry[
-    ActiveBluetoothProcessorCoordinator[WittyOneDevice]
-]
+type WittyOneConfigEntry = ConfigEntry[WittyOneProcessorCoordinator]
 
 MAX_RETRY = 4
 POLL_INTERVAL = 60
 
 
-class WittyOneDataUpdateCoordinator(
-    ActiveBluetoothProcessorCoordinator[WittyOneDevice]
+class WittyOneProcessorCoordinator(
+    ActiveBluetoothProcessorCoordinator[WittyOneDevice | None]
 ):
     """Class to manage fetching data from the API."""
 
@@ -41,10 +41,14 @@ class WittyOneDataUpdateCoordinator(
         config_entry: ConfigEntry,
     ) -> None:
         """Initialize."""
+        address = config_entry.unique_id
+        if address is None:
+            msg = "Config entry is missing unique_id (address)"
+            raise ValueError(msg)
         super().__init__(
             hass=hass,
             logger=logger,
-            address=config_entry.unique_id,
+            address=address,
             mode=BluetoothScanningMode.PASSIVE,
             update_method=lambda _: self.last_data,
             needs_poll_method=self._needs_poll,
@@ -53,8 +57,11 @@ class WittyOneDataUpdateCoordinator(
         )
         self.witty = WittyOneDeviceData(logger)
         self.nb_error = 0
-        self.last_data: WittyOneDevice | None = None
+        self.last_data: WittyOneDevice = WittyOneDevice(
+            static_information=WittyOneStaticProperties()
+        )
 
+    @callback
     def _needs_poll(
         self,
         _service_info: BluetoothServiceInfoBleak,
