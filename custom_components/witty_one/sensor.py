@@ -131,7 +131,7 @@ async def async_setup_entry(
     coordinator = entry.runtime_data
 
     def _sensor_update_to_bluetooth_data_update(
-        data: WittyOneDevice | None,
+        data: WittyOneDevice,
     ) -> PassiveBluetoothDataUpdate:
         """Convert a sensor update to a bluetooth data update."""
         device_info = DeviceInfo(
