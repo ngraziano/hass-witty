@@ -56,8 +56,8 @@ GENERAL_STATES = {
     15728640: "error",
 }
 
-NEEDDED_ENERGY_SIZE = 3
-NEEDED_PHASE_SIZE = 3
+VALID_ENERGY_SIZE = 3
+VALID_PHASE_SIZE = 3
 
 ENTITY_DESCRIPTIONS: tuple[WittyOneSensorEntityDescription, ...] = (
     WittyOneSensorEntityDescription(
@@ -68,7 +68,7 @@ ENTITY_DESCRIPTIONS: tuple[WittyOneSensorEntityDescription, ...] = (
             device_class=SensorDeviceClass.ENERGY,
             state_class=SensorStateClass.TOTAL_INCREASING,
         ),
-        exists_fn=lambda device: len(device.energies) > NEEDDED_ENERGY_SIZE,
+        exists_fn=lambda device: len(device.energies) > VALID_ENERGY_SIZE,
         value_fn=lambda device: device.energies[3].active_import_energy,
     ),
     WittyOneSensorEntityDescription(
@@ -79,7 +79,7 @@ ENTITY_DESCRIPTIONS: tuple[WittyOneSensorEntityDescription, ...] = (
             device_class=SensorDeviceClass.ENERGY,
             state_class=SensorStateClass.TOTAL_INCREASING,
         ),
-        exists_fn=lambda device: len(device.energies) > NEEDDED_ENERGY_SIZE,
+        exists_fn=lambda device: len(device.energies) > VALID_ENERGY_SIZE,
         value_fn=lambda device: device.energies[0].active_import_energy,
     ),
     WittyOneSensorEntityDescription(
@@ -90,7 +90,7 @@ ENTITY_DESCRIPTIONS: tuple[WittyOneSensorEntityDescription, ...] = (
             device_class=SensorDeviceClass.ENERGY,
             state_class=SensorStateClass.TOTAL_INCREASING,
         ),
-        exists_fn=lambda device: len(device.energies) > NEEDDED_ENERGY_SIZE,
+        exists_fn=lambda device: len(device.energies) > VALID_ENERGY_SIZE,
         value_fn=lambda device: device.energies[1].active_import_energy,
     ),
     WittyOneSensorEntityDescription(
@@ -101,7 +101,7 @@ ENTITY_DESCRIPTIONS: tuple[WittyOneSensorEntityDescription, ...] = (
             device_class=SensorDeviceClass.ENERGY,
             state_class=SensorStateClass.TOTAL_INCREASING,
         ),
-        exists_fn=lambda device: len(device.energies) > NEEDDED_ENERGY_SIZE,
+        exists_fn=lambda device: len(device.energies) > VALID_ENERGY_SIZE,
         value_fn=lambda device: device.energies[2].active_import_energy,
     ),
     WittyOneSensorEntityDescription(
@@ -122,7 +122,7 @@ ENTITY_DESCRIPTIONS: tuple[WittyOneSensorEntityDescription, ...] = (
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
         ),
-        exists_fn=lambda device: len(device.phases_states) > NEEDED_PHASE_SIZE,
+        exists_fn=lambda device: len(device.phases_states) > VALID_PHASE_SIZE,
         value_fn=lambda device: device.phases_states[3].active_power,
     ),
     WittyOneSensorEntityDescription(
