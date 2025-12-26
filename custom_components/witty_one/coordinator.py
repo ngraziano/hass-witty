@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING
 
 from homeassistant.components.bluetooth import (
     BluetoothScanningMode,
@@ -12,7 +12,7 @@ from homeassistant.components.bluetooth.active_update_processor import (
     ActiveBluetoothProcessorCoordinator,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import callback
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from custom_components.witty_one.witty_one.parser import (
@@ -22,6 +22,9 @@ from custom_components.witty_one.witty_one.parser import (
 )
 
 from .const import LOGGER
+
+if TYPE_CHECKING:
+    from logging import Logger
 
 type WittyOneConfigEntry = ConfigEntry[WittyOneProcessorCoordinator]
 
@@ -36,8 +39,8 @@ class WittyOneProcessorCoordinator(
 
     def __init__(
         self,
-        hass: Any,
-        logger: Any,
+        hass: HomeAssistant,
+        logger: Logger,
         config_entry: ConfigEntry,
     ) -> None:
         """Initialize."""
