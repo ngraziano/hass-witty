@@ -243,8 +243,6 @@ class WittyOneDeviceData:
 
         if self.static_properties is None:
             try:
-                self.logger.warning("client %s", client)
-
                 self.static_properties = await _read_static_properties(client)
             except Exception:
                 self.logger.exception("Fail to read static info")
