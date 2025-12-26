@@ -13,8 +13,7 @@ from typing import TYPE_CHECKING
 from homeassistant.const import Platform
 from homeassistant.loader import async_get_loaded_integration
 
-from custom_components.witty_one.const import DOMAIN, LOGGER
-
+from .const import DOMAIN, LOGGER
 from .coordinator import WittyOneDataUpdateCoordinator
 from .data import WittyOneData
 
