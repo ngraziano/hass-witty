@@ -239,35 +239,36 @@ class WittyOneDeviceData:
     async def update_device(self, ble_device: BLEDevice) -> WittyOneDevice:
         """Update the device."""
         client = await establish_connection(BleakClient, ble_device, ble_device.address)
-        await client.pair()
+        try:
+            await client.pair()
+            if self.static_properties is None:
+                try:
+                    self.static_properties = await _read_static_properties(client)
+                except Exception:
+                    self.logger.exception("Fail to read static info")
+                    self.logger.warning(
+                        'try to add CONFIG_BT_GATTC_MAX_CACHE_CHAR: "80"'
+                        " to sdkconfig_options if you use esphome"
+                    )
+                    if callable(getattr(client, "clear_cache", None)):
+                        await client.clear_cache()  # pyright: ignore[reportAttributeAccessIssue]
+                    raise
 
-        if self.static_properties is None:
-            try:
-                self.static_properties = await _read_static_properties(client)
-            except Exception:
-                self.logger.exception("Fail to read static info")
-                self.logger.warning(
-                    'try to add CONFIG_BT_GATTC_MAX_CACHE_CHAR: "80"'
-                    " to sdkconfig_options if you use esphome"
-                )
-                if callable(getattr(client, "clear_cache", None)):
-                    await client.clear_cache()  # pyright: ignore[reportAttributeAccessIssue]
-                raise
-
-        device = WittyOneDevice(static_information=self.static_properties)
-        (
-            device.general,
-            device.energies,
-            device.phases_states,
-            device.current_session,
-        ) = await asyncio.gather(
-            _read_general_state(client),
-            _read_energy(client),
-            _read_phases_state(client),
-            _current_session(client),
-        )
-        self.logger.debug("Device data: %s", device)
-        await client.disconnect()
+            device = WittyOneDevice(static_information=self.static_properties)
+            (
+                device.general,
+                device.energies,
+                device.phases_states,
+                device.current_session,
+            ) = await asyncio.gather(
+                _read_general_state(client),
+                _read_energy(client),
+                _read_phases_state(client),
+                _current_session(client),
+            )
+            self.logger.debug("Device data: %s", device)
+        finally:
+            await client.disconnect()
         return device
 
 
