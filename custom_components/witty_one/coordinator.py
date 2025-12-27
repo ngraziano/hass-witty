@@ -60,9 +60,7 @@ class WittyOneProcessorCoordinator(
         )
         self.witty = WittyOneDeviceData(logger)
         self.nb_error = 0
-        self.last_data: WittyOneDevice = WittyOneDevice(
-            static_information=WittyOneStaticProperties()
-        )
+        self.last_data: WittyOneDevice | None = None
 
     @callback
     def _needs_poll(

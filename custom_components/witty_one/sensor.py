@@ -182,7 +182,7 @@ async def async_setup_entry(
                     sensordesc.desc.key, coordinator.address
                 ): sensordesc.desc
                 for sensordesc in ENTITY_DESCRIPTIONS
-                if data is None or sensordesc.exists_fn(data)
+                if data and sensordesc.exists_fn(data)
             },
             entity_data={
                 PassiveBluetoothEntityKey(

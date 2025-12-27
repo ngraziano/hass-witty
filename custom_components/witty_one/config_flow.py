@@ -47,9 +47,7 @@ class WittyOneFlowHandler(ConfigFlow, domain=DOMAIN):
         """Confirm discovery."""
         if user_input is not None:
             return self.async_create_entry(
-                title=self.context.get("title_placeholders", {"name": "UNKNOWN"})[
-                    "name"
-                ],
+                title=self.context.get("title_placeholders", {}).get("name", "UNKNOWN"),
                 data={},
             )
         self._set_confirm_only()
