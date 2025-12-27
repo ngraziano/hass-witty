@@ -18,7 +18,6 @@ from homeassistant.helpers.update_coordinator import UpdateFailed
 from custom_components.witty_one.witty_one.parser import (
     WittyOneDevice,
     WittyOneDeviceData,
-    WittyOneStaticProperties,
 )
 
 from .const import LOGGER
