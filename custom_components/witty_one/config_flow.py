@@ -47,13 +47,13 @@ class WittyOneFlowHandler(ConfigFlow, domain=DOMAIN):
         """Confirm discovery."""
         if user_input is not None:
             return self.async_create_entry(
-                title=self.context["title_placeholders"]["name"],
+                title=self.context.get("title_placeholders", {}).get("name", "UNKNOWN"),
                 data={},
             )
         self._set_confirm_only()
         return self.async_show_form(
             step_id="bluetooth_confirm",
-            description_placeholders=self.context["title_placeholders"],
+            description_placeholders=self.context.get("title_placeholders", {}),
         )
 
     async def async_step_user(
