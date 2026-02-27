@@ -106,7 +106,7 @@ def _unpack(fmt: str, buffer: bytearray) -> tuple[Any, ...]:
     try:
         return struct.unpack(fmt, buffer)
     except struct.error as err:
-        msg = f"Wanted format {fmt} receive buffer[{len(buffer)}] {buffer.hex()}"
+        msg = f"witty_one wanted {fmt} receive buffer[{len(buffer)}] {buffer.hex()}"
         raise ParseError(msg) from err
 
 
