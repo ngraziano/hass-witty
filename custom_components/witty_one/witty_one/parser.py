@@ -4,6 +4,7 @@ import asyncio
 import dataclasses
 import struct
 from logging import Logger
+from typing import Any
 from uuid import UUID
 
 from bleak import BleakClient
@@ -91,10 +92,22 @@ class WittyOneDevice:
     )
 
 
+class ParseError(Exception):
+    """Error during parse."""
+
+
 async def _read_string(client: BleakClient, uuid: str | UUID) -> str:
     tmp = await client.read_gatt_char(uuid)
     (length,) = struct.unpack("<H", tmp[0:2])
     return tmp[2 : 2 + length].rstrip(b"\0").decode("utf-8")
+
+
+def _unpack(fmt: str, buffer: bytearray) -> tuple[Any, ...]:
+    try:
+        return struct.unpack(fmt, buffer)
+    except struct.error as err:
+        msg = f"Wanted format {fmt} receive buffer[{len(buffer)}] {buffer.hex()}"
+        raise ParseError(msg) from err
 
 
 async def _read_static_properties(client: BleakClient) -> WittyOneStaticProperties:
@@ -113,7 +126,7 @@ async def _read_static_properties(client: BleakClient) -> WittyOneStaticProperti
 
 async def _read_energy(client: BleakClient) -> list[WittyOnePhaseEnergy]:
     tmp = await client.read_gatt_char(ENERGY_UUID)
-    values = struct.unpack("<HQQQQQQQQQQQQQQQQQQQQ", tmp)
+    values = _unpack("<HQQQQQQQQQQQQQQQQQQQQ", tmp)
     return [
         WittyOnePhaseEnergy(
             active_import_energy=values[1] / 1000,
@@ -148,7 +161,7 @@ async def _read_energy(client: BleakClient) -> list[WittyOnePhaseEnergy]:
 
 async def _read_phases_state(client: BleakClient) -> list[WittyOnePhaseState]:
     tmp = await client.read_gatt_char(ELECTRIC_STATE_UUID)
-    values = struct.unpack("<Hlllllllllllllllllllllllllllllll", tmp)
+    values = _unpack("<Hlllllllllllllllllllllllllllllll", tmp)
     return [
         WittyOnePhaseState(
             voltage=values[1] / 1000,
@@ -213,13 +226,13 @@ async def _read_general_state(client: BleakClient) -> WittyOneGeneralState:
 
 async def _ambient_temp(client: BleakClient) -> float:
     tmp = await client.read_gatt_char(AMBIENT_TEMP_UUID)
-    (_, value, _min_value, _max_value) = struct.unpack("<Hhhh", tmp)
+    (_, value, _min_value, _max_value) = _unpack("<Hhhh", tmp)
     return value / 100
 
 
 async def _relay_temp(client: BleakClient) -> float:
     tmp = await client.read_gatt_char(RELAY_TEMP_UUID)
-    (_, value, _min_value, _max_value) = struct.unpack("<Hhhh", tmp)
+    (_, value, _min_value, _max_value) = _unpack("<Hhhh", tmp)
     return value / 100
 
 
