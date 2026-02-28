@@ -2,15 +2,18 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING
 
-from bleak_retry_connector import (
-    close_stale_connections_by_address,
+from homeassistant.components.bluetooth import (
+    BluetoothScanningMode,
+    BluetoothServiceInfoBleak,
 )
-from homeassistant.components import bluetooth
+from homeassistant.components.bluetooth.active_update_processor import (
+    ActiveBluetoothProcessorCoordinator,
+)
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from custom_components.witty_one.witty_one.parser import (
     WittyOneDevice,
@@ -19,50 +22,70 @@ from custom_components.witty_one.witty_one.parser import (
 
 from .const import LOGGER
 
-type WittyOneConfigEntry = ConfigEntry[WittyOneDataUpdateCoordinator]
+if TYPE_CHECKING:
+    from logging import Logger
+
+type WittyOneConfigEntry = ConfigEntry[WittyOneProcessorCoordinator]
 
 MAX_RETRY = 4
+POLL_INTERVAL = 60
 
 
-class WittyOneDataUpdateCoordinator(DataUpdateCoordinator[WittyOneDevice]):
+class WittyOneProcessorCoordinator(
+    ActiveBluetoothProcessorCoordinator[WittyOneDevice | None]
+):
     """Class to manage fetching data from the API."""
 
-    config_entry: ConfigEntry
-    witty = WittyOneDeviceData(LOGGER)
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        logger: Logger,
+        config_entry: ConfigEntry,
+    ) -> None:
+        """Initialize."""
+        address = config_entry.unique_id
+        if address is None:
+            msg = "Config entry is missing unique_id (address)"
+            raise ValueError(msg)
+        super().__init__(
+            hass=hass,
+            logger=logger,
+            address=address,
+            mode=BluetoothScanningMode.PASSIVE,
+            update_method=lambda _: self.last_data,
+            needs_poll_method=self._needs_poll,
+            poll_method=self._async_poll_device,
+            connectable=True,
+        )
+        self.witty = WittyOneDeviceData(logger)
+        self.nb_error = 0
+        self.last_data: WittyOneDevice | None = None
 
-    previsous_data: WittyOneDevice | None = None
-    nb_error = 0
+    @callback
+    def _needs_poll(
+        self,
+        _service_info: BluetoothServiceInfoBleak,
+        seconds_since_last_poll: float | None,
+    ) -> bool:
+        """Determine if a poll is needed."""
+        return (
+            seconds_since_last_poll is None or seconds_since_last_poll > POLL_INTERVAL
+        )
 
-    async def _async_update_data(self) -> Any:
-        """Update data via library."""
-        address = self.config_entry.unique_id
-        if not address:
-            msg = "No address found in configuration"
-            raise ConfigEntryNotReady(msg)
-
-        LOGGER.debug("Updating data from %s ", address)
-
-        await close_stale_connections_by_address(address)
-
-        ble_device = bluetooth.async_ble_device_from_address(self.hass, address)
-        if not ble_device:
-            self.nb_error += 1
-            if self.nb_error < MAX_RETRY and self.previsous_data:
-                LOGGER.warning("Device not found, using previous data")
-                return self.previsous_data
-            msg = f"Could not find Witty One device with address {address}"
-            raise ConfigEntryError(msg)
-
+    async def _async_poll_device(
+        self, service_info: BluetoothServiceInfoBleak
+    ) -> WittyOneDevice:
+        """Poll the device."""
         try:
-            data = await self.witty.update_device(ble_device)
+            data = await self.witty.update_device(service_info.device)
         except Exception as err:
             self.nb_error += 1
-            if self.nb_error < MAX_RETRY and self.previsous_data:
+            if self.nb_error < MAX_RETRY and self.last_data:
                 LOGGER.warning("Error updating device, using previous data: %s", err)
-                return self.previsous_data
+                return self.last_data
             msg = f"Unable to fetch data: {err}"
             raise UpdateFailed(msg) from err
-
-        self.previsous_data = data
-        self.nb_error = 0
-        return data
+        else:
+            self.nb_error = 0
+            self.last_data = data
+            return data
