@@ -1,5 +1,8 @@
 # Witty One Integration
 
+> [!IMPORTANT]
+> This integration uses Bluetooth, which is not the most reliable. It is preferable to equip the chargers with an Ethernet/Wi-Fi expansion card and use [OCPP integration](https://github.com/lbbrhzn/ocpp).
+
 > [!WARNING]
 > Work in progress, the list of sensor may change and you may need to re-add this integration.
 
