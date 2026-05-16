@@ -3,12 +3,9 @@
 import asyncio
 import dataclasses
 import struct
-from logging import Logger
-from typing import Any
-from uuid import UUID
+from typing import TYPE_CHECKING, Any
 
 from bleak import BleakClient
-from bleak.backends.device import BLEDevice
 from bleak_retry_connector import establish_connection
 
 from .const import (
@@ -21,6 +18,12 @@ from .const import (
     SESSION_STATE_UUID,
     STATE_UUID,
 )
+
+if TYPE_CHECKING:
+    from logging import Logger
+    from uuid import UUID
+
+    from bleak.backends.device import BLEDevice
 
 
 @dataclasses.dataclass
@@ -123,7 +126,10 @@ def _unpack_from(fmt: str, buffer: bytearray, property_name: str) -> tuple[Any, 
     try:
         return struct.unpack_from(fmt, buffer)
     except struct.error as err:
-        msg = f"witty_one for {property_name} {fmt} receive buffer[{len(buffer)}] {buffer.hex()}"
+        msg = (
+            f"witty_one for {property_name} {fmt} receive "
+            f"buffer[{len(buffer)}] {buffer.hex()}"
+        )
         raise ParseError(msg) from err
 
 
