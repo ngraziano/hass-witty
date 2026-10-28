@@ -327,5 +327,7 @@ def model_id_to_name(model_id: str) -> str:
             return "Witty one 1x7kW 1P"
         case "XVR107STI":
             return "Witty one 1x7kW 1P"
+        case "XVL122STI":
+            return "Witty plus 1x22kW 3P"
         case _:
             return "Witty unknown"
