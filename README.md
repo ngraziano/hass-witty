@@ -3,8 +3,10 @@
 > [!IMPORTANT]
 > This integration uses Bluetooth, which is not the most reliable. It is preferable to equip the chargers with an Ethernet/Wi-Fi expansion card and use [OCPP integration](https://github.com/lbbrhzn/ocpp).
 
+
+
 > [!WARNING]
-> Work in progress, the list of sensor may change and you may need to re-add this integration.
+> At this time (18 November 2026) there is problem with bluetooth proxy and default sdk 5.5.6 and it may be needed to add `version: "5.5.5"` to the framework see #122, it help some people.
 
 
 [![GitHub Release][releases-shield]][releases]
@@ -42,6 +44,8 @@ esp32:
   board: esp32dev
   framework:
     type: esp-idf
+    # If current version is 5.5.6
+    version: "5.5.5"
     # increase the number of characteristic read by the ESP
     sdkconfig_options:
       CONFIG_BT_GATTC_MAX_CACHE_CHAR: "95"
